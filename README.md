@@ -1,5 +1,6 @@
 # Flame Graphs visualize profiled code
 
+This repo is a fork from https://github.com/brendangregg/FlameGraph
 Main Website: http://www.brendangregg.com/flamegraphs.html
 
 Example (click to zoom):
