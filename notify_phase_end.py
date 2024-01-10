@@ -11,18 +11,13 @@ from argparse import ArgumentParser
 import json
 
 parser = ArgumentParser()
-parser.add_argument("phase_id", type=int, help="Number of the phase that ended")
-parser.add_argument("-n", "--phase_name", type=str, help="Name of the phase that ended")
-parser.add_argument(
-    "-i", "--ip", type=str, default="0.0.0.0", help="Ip to send the notification to"
-)
-parser.add_argument("-p", "--port", type=int, default=4400, help="Port to send the notification to")
+parser.add_argument("phase_name", type=str, help="Name of the phase that ended")
+parser.add_argument("-i", "--ip", type=str, default="0.0.0.0", help="Target ip for the notification")
+parser.add_argument("-p", "--port", type=int, default=4400, help="Target port for the notification")
 args = parser.parse_args()
 
 with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
     s.connect((args.ip, args.port))
     message = {"message": "Ending phase"}
-    message["phase"] = args.phase_id
-    if args.phase_name:
-        message["phase_name"] = args.phase_name
+    message["phase"] = args.phase_name
     s.send((json.dumps(message) + "\n").encode())
