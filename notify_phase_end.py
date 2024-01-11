@@ -18,6 +18,6 @@ args = parser.parse_args()
 
 with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
     s.connect((args.ip, args.port))
-    message = {"message": "Ending phase"}
+    message = {"message": "Ended phase"}
     message["phase"] = args.phase_name
     s.send((json.dumps(message) + "\n").encode())
