@@ -20,4 +20,7 @@ with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
     s.connect((args.ip, args.port))
     message = {"message": "Ended phase"}
     message["phase"] = args.phase_name
+    message["request"] = 1
     s.send((json.dumps(message) + "\n").encode())
+    # Wait until DSI finishes responding to phase changes
+    resp = s.recv(1024)
