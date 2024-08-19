@@ -74,6 +74,7 @@ sub remember_stack {
 }
 my $annotate_kernel = 0; # put an annotation on kernel function
 my $annotate_jit = 0;   # put an annotation on jit symbols
+my $annotate_mongo = 0;   # put an annotation on mongo symbols
 my $annotate_all = 0;   # enale all annotations
 my $include_pname = 1;	# include process names in stacks
 my $include_pid = 0;	# include process ID with process name
@@ -96,6 +97,7 @@ GetOptions('inline' => \$show_inline,
            'pid' => \$include_pid,
            'kernel' => \$annotate_kernel,
            'jit' => \$annotate_jit,
+           'mongo' => \$annotate_mongo,
            'all' => \$annotate_all,
            'tid' => \$include_tid,
            'addrs' => \$include_addrs,
@@ -120,7 +122,7 @@ USAGE: $0 [options] infile > outfile\n
 USAGE_END
 
 if ($annotate_all) {
-	$annotate_kernel = $annotate_jit = 1;
+	$annotate_kernel = $annotate_jit = $annotate_mongo = 1;
 }
 
 my %inlineCache;
@@ -382,12 +384,14 @@ while (defined($_ = <>)) {
 				$func .= "_[i]";	# inlined
 			} elsif ($annotate_kernel == 1 && $mod =~ m/(^\[|vmlinux$)/ && $mod !~ /unknown/) {
 				$func .= "_[k]";	# kernel
-			} elsif ($annotate_jit == 1 && $mod =~ m:/tmp/perf-\d+\.map:) {
+			} elsif ($annotate_mongo == 1 && $mod =~ m:/tmp/perf-\d+\.map:) {
 				$func .= "_[j]";	# jitted
-			} elsif ($mod =~ m:/media/ebs/workdir/mongodb/bin/mongod:) {
-				$func .= "_[mongod]";	# jitted
-			} elsif ($mod =~ m:/media/ebs/workdir/mongodb/bin/mongos:) {
-				$func .= "_[mongos]";	# jitted
+			} elsif ($annotate_mongo == 1 && $mod =~ m:/media/ebs/workdir/mongodb/bin/mongod:) {
+				$func .= "_[mongod]";	# mongod
+			} elsif ($annotate_mongo == 1 && $mod =~ m:/media/ebs/workdir/mongodb/bin/mongos:) {
+				$func .= "_[mongos]";	# mongos
+			} elsif ($annotate_mongo == 1 && $mod =~ m:/usr/lib64:) {
+				$func .= "_[l]";	# dynamic libraries
 			}
 
 			#
