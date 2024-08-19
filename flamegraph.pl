@@ -412,6 +412,24 @@ sub color {
 	}
 
 	# multi palettes
+	if (defined $type and $type eq "mongo") {
+		# Handle both annotations (_[j], _[i], ...; which are
+		# accurate), as well as input that lacks any annotations, as
+		# best as possible. Without annotations, we get a little hacky
+		# and match on java|org|com, etc.
+		if ($name =~ m:_\[k\]$:) {	# kernel annotation
+			$type = "green";
+		} elsif ($name =~ m:_\[mongod\]$:) {	# mongod
+			$type = "orange";
+		} elsif ($name =~ m:_\[mongos\]$:) {	# mongos
+			$type = "aqua";
+		} elsif ($name =~ m:_\[l\]$:) {	# dynamic libraries such as libc or ssl
+			$type = "green";
+		} else {
+			$type = "green";
+		}
+		# fall-through to color palettes
+	}
 	if (defined $type and $type eq "java") {
 		# Handle both annotations (_[j], _[i], ...; which are
 		# accurate), as well as input that lacks any annotations, as
@@ -424,7 +442,7 @@ sub color {
 		} elsif ($name =~ m:^L?(java|javax|jdk|net|org|com|io|sun)/:) {	# Java
 			$type = "green";
 		} elsif ($name =~ /:::/) {      # Java, typical perf-map-agent method separator
-			$type = "green";	              
+			$type = "green";
 		} elsif ($name =~ /::/) {	# C++
 			$type = "yellow";
 		} elsif ($name =~ m:_\[k\]$:) {	# kernel annotation
@@ -1212,7 +1230,7 @@ while (my ($id, $node) = each %Node) {
 		$escaped_func =~ s/</&lt;/g;
 		$escaped_func =~ s/>/&gt;/g;
 		$escaped_func =~ s/"/&quot;/g;
-		$escaped_func =~ s/_\[[kwij]\]$//;	# strip any annotation
+		$escaped_func =~ s/_(?:\[[kwijl]\]|\[mongod\]|\[mongos\])$//;	# strip any annotation
 		unless (defined $delta) {
 			$info = "$escaped_func ($samples_txt $countname, $pct%)";
 		} else {
@@ -1244,12 +1262,12 @@ while (my ($id, $node) = each %Node) {
 	my $chars = int( ($x2 - $x1) / ($fontsize * $fontwidth));
 	my $text = "";
 	if ($chars >= 3) { # room for one char plus two dots
-		$func =~ s/_\[[kwij]\]$//;	# strip any annotation
 		$text = substr $func, 0, $chars;
 		substr($text, -2, 2) = ".." if $chars < length $func;
 		$text =~ s/&/&amp;/g;
 		$text =~ s/</&lt;/g;
 		$text =~ s/>/&gt;/g;
+		$text =~ s/_(?:\[[kwijl]\]|\[mongod\]|\[mongos\])$//;	# strip any annotation
 	}
 	$im->stringTTF(undef, $x1 + 3, 3 + ($y1 + $y2) / 2, $text);
 
